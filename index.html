@@ -159,6 +159,27 @@ table.data td.lbl{text-align:left;font-weight:bold;background:#fafcff}
   header h1{font-size:22px}
 }
 .tag{display:inline-block;background:#eef3ff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:bold;color:var(--soft);margin:3px 4px 0 0}
+
+/* relier des paires */
+.relier-wrap{display:flex;gap:14px;margin-top:8px}
+.rel-col{flex:1;display:flex;flex-direction:column;gap:8px}
+.rel-item{font:inherit;font-size:14px;font-weight:bold;border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 8px;cursor:pointer;transition:.12s;text-align:center}
+.rel-item.sel{border-color:var(--blue);background:#eef6ff;transform:scale(1.03)}
+.rel-item.done{border-color:var(--ok);background:var(--okbg);color:#1c6b45}
+.rel-item:disabled{opacity:1;cursor:default}
+
+/* glisser-déposer */
+.gl-bank{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;min-height:20px}
+.gl-tag{font-size:13px;font-weight:bold;border:2px solid var(--lav);background:#f6f1ff;border-radius:12px;padding:9px 11px;cursor:grab;transition:.12s}
+.gl-tag.sel{border-color:var(--blue);background:#eef6ff;transform:scale(1.05)}
+.gl-tag.used{display:none}
+.gl-cases{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.gl-case{border:2px dashed var(--peach);border-radius:14px;padding:10px;min-height:74px;text-align:center;background:#fff8f6}
+.gl-case>b{font-size:24px;color:var(--peach)}
+.gl-drop{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.gl-placed{font-size:12px;font-weight:bold;background:var(--okbg);border:1px solid var(--ok);color:#1c6b45;border-radius:9px;padding:5px}
+.shake{animation:shk .4s}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 </style>
 </head>
 <body>
@@ -219,6 +240,7 @@ table.data td.lbl{text-align:left;font-weight:bold;background:#fafcff}
       <p class="muted">Une joueuse crée un duel et donne le <b>code</b> à l'autre. Mêmes questions, en direct ! Il faut être <b>en ligne</b> (point vert).</p>
       <div style="margin:10px 0">
         <span class="tag" onclick="duelTheme='operation';refreshDuelTheme()" id="dt-operation">🧩 Quelle opération ?</span>
+        <span class="tag" onclick="duelTheme='double';refreshDuelTheme()" id="dt-double">🧠 2 opérations</span>
         <span class="tag" onclick="duelTheme='quoi';refreshDuelTheme()" id="dt-quoi">❓ Que demande-t-on ?</span>
         <span class="tag" onclick="duelTheme='batons';refreshDuelTheme()" id="dt-batons">📊 Lire un graphique</span>
       </div>
@@ -253,7 +275,7 @@ table.data td.lbl{text-align:left;font-weight:bold;background:#fafcff}
 /* =========================================================
    ⚙️ CONFIG — remplace par TON URL Render après déploiement
    ========================================================= */
-const SERVER_URL = "wss://td-l2jc.onrender.com";
+const SERVER_URL = "wss://TON-APP.onrender.com";
 /* ========================================================= */
 
 // étoiles d'ambiance
@@ -356,6 +378,9 @@ const TYPE_LABELS = {
   quoi:{e:'❓',n:'Que me demande-t-on ?'},
   operation:{e:'🧮',n:'Quelle opération ?'},
   indices:{e:'🔗',n:'Relier mot et opération'},
+  double:{e:'🧠',n:'Problèmes à 2 opérations'},
+  relier:{e:'🪢',n:'Relier les paires'},
+  glisser:{e:'✋',n:'Glisser dans la bonne case'},
 };
 function renderTrainPick(){
   $('#trainPlay').style.display='none';
@@ -402,6 +427,12 @@ function buildQuestions(ci,key){
     ex.forEach(e=>out.push({kind:'operation',e,choix:c.exos.operationChoix,labels:c.exos.operationLabels}));
   }else if(key==='indices'){
     ex.forEach(e=>out.push({kind:'indices',e,choix:c.exos.operationChoix,labels:c.exos.operationLabels}));
+  }else if(key==='double'){
+    ex.forEach(e=>out.push({kind:'double',e}));
+  }else if(key==='relier'){
+    ex.forEach(t=>out.push({kind:'relier',data:t}));
+  }else if(key==='glisser'){
+    ex.forEach(t=>out.push({kind:'glisser',data:t}));
   }
   return shuffle(out);
 }
@@ -439,6 +470,9 @@ function renderBody(item){
   if(item.kind==='ensembles') return bodyEnsembles(item);
   if(item.kind==='quoi'||item.kind==='operation') return bodyClassify(item);
   if(item.kind==='indices') return bodyIndices(item);
+  if(item.kind==='double') return bodyDouble(item);
+  if(item.kind==='relier') return bodyRelier(item);
+  if(item.kind==='glisser') return bodyGlisser(item);
   return '';
 }
 
@@ -562,6 +596,128 @@ function bodyIndices(item){
   return h;
 }
 
+/* ---------- corps : PROBLÈME À 2 OPÉRATIONS ---------- */
+function bodyDouble(item){
+  window._dbl={ops:item.e.ops, picked:[], aide:item.e.aide};
+  let h=`<p class="enonce">${item.e.e}</p>
+    <p class="muted">Ce problème demande <b>2 opérations</b>. Choisis-les <b>dans l'ordre</b> 👇</p>
+    <div id="dblPicks" style="text-align:center;font-size:22px;font-weight:bold;margin:8px 0;color:var(--blue)">1ʳᵉ : ___ &nbsp;&nbsp; 2ᵉ : ___</div>
+    <div class="opbtns" id="dblOps">`;
+  ["+","-","×",":"].forEach(op=>h+=`<button class="opbtn" data-v="${op}" onclick="pickDouble('${op}')">${op}</button>`);
+  h+=`</div><button class="btn ghost sm" style="margin-top:8px;width:auto" onclick="resetDouble()">↺ Recommencer</button>`;
+  return h;
+}
+function pickDouble(op){
+  const d=window._dbl;
+  if(d.picked.length>=2) return;
+  d.picked.push(op);
+  $('#dblPicks').innerHTML=`1ʳᵉ : ${d.picked[0]||'___'} &nbsp;&nbsp; 2ᵉ : ${d.picked[1]||'___'}`;
+  if(d.picked.length===2){
+    document.querySelectorAll('#dblOps .opbtn').forEach(b=>b.disabled=true);
+    // comparer en ignorant l'ordre quand les 2 opérations sont identiques, sinon ordre exact
+    const want=d.ops.slice().sort().join(''), got=d.picked.slice().sort().join('');
+    const ok = want===got;
+    feedback(ok, ok?'Bravo ! Les 2 bonnes opérations ! 🎉':`C'était : ${d.ops[0]} puis ${d.ops[1]}. ${d.aide}`, ok?8:0);
+  }
+}
+function resetDouble(){
+  const d=window._dbl; if(!d) return;
+  d.picked=[];
+  $('#dblPicks').innerHTML='1ʳᵉ : ___ &nbsp;&nbsp; 2ᵉ : ___';
+  document.querySelectorAll('#dblOps .opbtn').forEach(b=>{b.disabled=false;b.classList.remove('good','bad');});
+}
+
+/* ---------- corps : RELIER DES PAIRES (clic gauche → clic droite) ---------- */
+function bodyRelier(item){
+  const t=item.data;
+  window._rel={pairs:{}, sel:null, total:t.gauche.length, data:t};
+  // mélange la colonne droite pour que ce ne soit pas aligné
+  const dr=shuffle(t.droite);
+  let h=`<p class="enonce">${t.titre}</p><p class="muted">Touche une case à gauche, puis sa paire à droite.</p>
+    <div class="relier-wrap">
+      <div class="rel-col">`;
+  t.gauche.forEach(g=>h+=`<button class="rel-item" data-side="g" data-id="${g.id}" onclick="relPick('g','${g.id}')">${g.t}</button>`);
+  h+=`</div><div class="rel-col">`;
+  dr.forEach(d=>h+=`<button class="rel-item" data-side="d" data-id="${d.id}" onclick="relPick('d','${d.id}')">${d.t}</button>`);
+  h+=`</div></div><button class="btn ghost sm" style="width:auto;margin-top:10px" onclick="skipQ()">Passer →</button>`;
+  return h;
+}
+function relPick(side,id){
+  const r=window._rel;
+  const btn=document.querySelector(`.rel-item[data-side="${side}"][data-id="${id}"]`);
+  if(btn.classList.contains('done')) return;
+  if(!r.sel){
+    if(side!=='g'){ return; } // on commence par la gauche
+    r.sel=id;
+    document.querySelectorAll('.rel-item.sel').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    return;
+  }
+  // on a déjà une case gauche sélectionnée, on attend une droite
+  if(side==='g'){ // re-sélection à gauche
+    document.querySelectorAll('.rel-item.sel').forEach(b=>b.classList.remove('sel'));
+    r.sel=id; btn.classList.add('sel'); return;
+  }
+  // side==='d' : on tente la paire
+  const gId=r.sel;
+  const d=r.data.droite.find(x=>x.id===id);
+  const ok = d.lie===gId;
+  const gBtn=document.querySelector(`.rel-item[data-side="g"][data-id="${gId}"]`);
+  gBtn.classList.remove('sel');
+  if(ok){
+    gBtn.classList.add('done'); btn.classList.add('done');
+    gBtn.disabled=true; btn.disabled=true;
+    r.pairs[gId]=id;
+    if(Object.keys(r.pairs).length===r.total){
+      feedback(true,'Bravo, tout est relié ! 🎉',8);
+    }
+  }else{
+    btn.classList.add('shake');
+    setTimeout(()=>btn.classList.remove('shake'),400);
+  }
+  r.sel=null;
+}
+
+/* ---------- corps : GLISSER-DÉPOSER (drag + tap fallback) ---------- */
+function bodyGlisser(item){
+  const t=item.data;
+  window._gl={data:t, placed:0, total:t.etiquettes.length, sel:null};
+  const tags=shuffle(t.etiquettes.map((e,i)=>({...e,i})));
+  let h=`<p class="enonce">${t.titre}</p><p class="muted">Glisse l'étiquette dans la bonne case (ou touche l'étiquette puis la case).</p>
+    <div class="gl-bank" id="glBank">`;
+  tags.forEach(e=>h+=`<div class="gl-tag" draggable="true" data-i="${e.i}" data-bon="${e.bon}" onclick="glTap(${e.i})" ondragstart="glDragStart(event,${e.i})">${e.t}</div>`);
+  h+=`</div><div class="gl-cases">`;
+  t.cases.forEach(c=>h+=`<div class="gl-case" data-c="${c}" ondragover="event.preventDefault()" ondrop="glDrop(event,'${c}')" onclick="glCaseTap('${c}')"><b>${c}</b><div class="gl-drop"></div></div>`);
+  h+=`</div><button class="btn ghost sm" style="width:auto;margin-top:10px" onclick="skipQ()">Passer →</button>`;
+  return h;
+}
+function glDragStart(ev,i){ ev.dataTransfer.setData('i',i); }
+function glDrop(ev,c){ ev.preventDefault(); glPlace(Number(ev.dataTransfer.getData('i')),c); }
+function glTap(i){
+  const g=window._gl;
+  document.querySelectorAll('.gl-tag.sel').forEach(t=>t.classList.remove('sel'));
+  const tag=document.querySelector(`.gl-tag[data-i="${i}"]`);
+  if(tag && !tag.classList.contains('used')){ g.sel=i; tag.classList.add('sel'); }
+}
+function glCaseTap(c){ const g=window._gl; if(g.sel!=null){ glPlace(g.sel,c); g.sel=null; } }
+function glPlace(i,c){
+  const g=window._gl;
+  const tag=document.querySelector(`.gl-tag[data-i="${i}"]`);
+  if(!tag || tag.classList.contains('used')) return;
+  const bon=tag.dataset.bon;
+  if(bon===c){
+    const slot=document.querySelector(`.gl-case[data-c="${c}"] .gl-drop`);
+    const copy=document.createElement('div'); copy.className='gl-placed'; copy.textContent=tag.textContent;
+    slot.appendChild(copy);
+    tag.classList.add('used'); tag.classList.remove('sel'); tag.draggable=false;
+    g.placed++;
+    if(g.placed===g.total){ feedback(true,'Bravo, tout est bien rangé ! 🎉',8); }
+  }else{
+    const cs=document.querySelector(`.gl-case[data-c="${c}"]`);
+    cs.classList.add('shake'); setTimeout(()=>cs.classList.remove('shake'),400);
+  }
+}
+
 /* ---------- briques de réponse ---------- */
 function numInput(rep){
   window._rep=rep;
@@ -615,6 +771,7 @@ function answerSimple(btn,ok){
   feedback(ok, ok?'Bravo ! 🎉':'Raté !', ok?5:0);
 }
 function esc(s){return String(s).replace(/'/g,"\\'");}
+function skipQ(){ qi++; renderQuestion(duelMode?'#duelPlay':'#trainPlay'); }
 
 /* ---------- feedback + passage à la question suivante ---------- */
 function feedback(ok,msg,pts){
@@ -650,7 +807,7 @@ function renderResults(container){
    ========================================================= */
 let duelMyScore=0, duelOppScore=0, duelMyDone=false, duelOppDone=false, duelOppName='';
 function refreshDuelTheme(){
-  ['operation','quoi','batons'].forEach(t=>$('#dt-'+t).style.background = t===duelTheme?'#dbe9ff':'#eef3ff');
+  ['operation','double','quoi','batons'].forEach(t=>$('#dt-'+t).style.background = t===duelTheme?'#dbe9ff':'#eef3ff');
 }
 refreshDuelTheme();
 function createDuel(){
@@ -668,7 +825,7 @@ function startDuel(m){
   inDuel=true; duelTheme=m.theme; duelOppName=m.opp;
   duelMyScore=0; duelOppScore=0; duelMyDone=false; duelOppDone=false;
   // construire les questions du thème choisi (même chapitre)
-  const map={operation:[1,'operation'],quoi:[1,'quoi'],batons:[0,'batons']};
+  const map={operation:[1,'operation'],double:[1,'double'],quoi:[1,'quoi'],batons:[0,'batons']};
   const [ci,key]=map[m.theme]||[1,'operation'];
   duelMode=true; q=buildQuestions(ci,key).slice(0,8); qi=0; qScore=0;
   $('#duelLobby').style.display='none'; $('#duelWait').style.display='none';

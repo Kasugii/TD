@@ -260,6 +260,114 @@ const CHAPITRES = [
       {mot:"Partager, séparer, faire des groupes égaux", bon:":"},
       {mot:"Des paquets identiques, des rangées de…", bon:"×"},
     ],
+
+    // -------- PROBLÈMES À 2 OPÉRATIONS (choisir les 2 opérations dans l'ordre) --------
+    double: [
+      {
+        e:"Hier, 15 garçons et 20 filles sont allés à la patinoire. Aujourd'hui, 14 autres garçons sont allés skier. Combien d'enfants sont allés patiner en tout ?",
+        ops:["+","+"],
+        aide:"D'abord les enfants à la patinoire (15 + 20), puis on ne compte QUE les patineurs."
+      },
+      {
+        e:"Alex apporte des biscuits : 15 en forme de cœur, 20 en forme de lapin et 18 en forme d'ours. Combien de biscuits en forme d'animaux ?",
+        ops:["+","+"],
+        aide:"Les animaux = lapins + ours (le cœur n'est pas un animal). On additionne deux fois."
+      },
+      {
+        e:"Gina achète 7 perles rondes rouges, 3 ovales bleues et 20 perles rondes blanches. Combien de perles RONDES a-t-elle ?",
+        ops:["+","-"],
+        aide:"Les rondes = rouges + blanches. On peut aussi enlever les ovales du total."
+      },
+      {
+        e:"Au camp, le matin il y a 18 animateurs. L'après-midi, 10 s'ajoutent mais 5 partent. Combien d'animateurs l'après-midi ?",
+        ops:["+","-"],
+        aide:"On ajoute les nouveaux (+10) puis on enlève ceux qui partent (−5)."
+      },
+      {
+        e:"Tom a 20 € dans sa tirelire. Il reçoit 30 € de son parrain et 20 € de sa marraine. Combien a-t-il maintenant ?",
+        ops:["+","+"],
+        aide:"On ajoute les deux cadeaux à ce qu'il avait déjà."
+      },
+      {
+        e:"J'achète 3 bagues à 10 € chacune. Je donne un billet de 50 €. Combien la vendeuse me rend-elle ?",
+        ops:["×","-"],
+        aide:"D'abord le prix des bagues (3 × 10), puis on enlève du billet de 50 €."
+      },
+      {
+        e:"Marie a 20 € et reçoit 10 €. Elle partage tout en parts égales entre ses 2 enfants. Combien chacun reçoit-il ?",
+        ops:["+",":"],
+        aide:"On rassemble l'argent (+10) puis on partage en 2 (÷2)."
+      },
+      {
+        e:"J'ai 15 bonbons. J'en donne 5 à Luc et 5 à Léa. Combien m'en reste-t-il ?",
+        ops:["-","-"],
+        aide:"On enlève une fois pour Luc, une fois pour Léa."
+      },
+    ],
+
+    // -------- RELIER DES PAIRES (explication ↔ opération) --------
+    relier: [
+      {
+        titre:"Relie chaque explication à son opération",
+        gauche:[
+          {id:"g1", t:"Enlever, retirer, perdre"},
+          {id:"g2", t:"Rassembler, ajouter, gagner"},
+          {id:"g3", t:"Partager, faire des groupes égaux"},
+          {id:"g4", t:"Des paquets identiques, des rangées"},
+        ],
+        droite:[
+          {id:"d1", t:"une soustraction", lie:"g1"},
+          {id:"d2", t:"une addition", lie:"g2"},
+          {id:"d3", t:"une division", lie:"g3"},
+          {id:"d4", t:"une multiplication", lie:"g4"},
+        ]
+      },
+      {
+        titre:"Relie chaque opération à son symbole",
+        gauche:[
+          {id:"o1", t:"une soustraction"},
+          {id:"o2", t:"une addition"},
+          {id:"o3", t:"une multiplication"},
+          {id:"o4", t:"une division"},
+        ],
+        droite:[
+          {id:"s1", t:"−", lie:"o1"},
+          {id:"s2", t:"+", lie:"o2"},
+          {id:"s3", t:"×", lie:"o3"},
+          {id:"s4", t:":", lie:"o4"},
+        ]
+      },
+    ],
+
+    // -------- GLISSER-DÉPOSER : ranger les étiquettes dans la bonne case --------
+    glisser: [
+      {
+        titre:"Range chaque problème dans la bonne opération",
+        cases:["+","−","×",":"],
+        etiquettes:[
+          {t:"Marc marque 3 buts, son copain 3 aussi.", bon:"+"},
+          {t:"Lucie a 20 €, elle achète un livre à 8 €.", bon:"−"},
+          {t:"7 rangées de 5 carrés de chocolat.", bon:"×"},
+          {t:"14 sucettes partagées entre 2 filles.", bon:":"},
+          {t:"5 chiots : combien de pattes en tout ?", bon:"×"},
+          {t:"24 élèves, 12 partent à la bibliothèque.", bon:"−"},
+          {t:"20 perles partagées dans 4 boîtes.", bon:":"},
+          {t:"15 billes + 8 billes ensemble.", bon:"+"},
+        ]
+      },
+      {
+        titre:"Range chaque mot-indice dans la bonne opération",
+        cases:["+","−","×",":"],
+        etiquettes:[
+          {t:"de plus, en tout, ensemble", bon:"+"},
+          {t:"il reste, de moins, on rend", bon:"−"},
+          {t:"des rangées de, le double", bon:"×"},
+          {t:"partager en parts égales", bon:":"},
+          {t:"gagner, ajouter", bon:"+"},
+          {t:"enlever, retirer", bon:"−"},
+        ]
+      },
+    ],
   }
 },
 
