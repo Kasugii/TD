@@ -165,7 +165,7 @@ const CHAPITRES = [
         gauche:"foot", droite:"tennis",
         seulGauche:["Lucas","Rachel","Louka","Mélina"],   // 4
         milieu:["Léo","Clara","Enzo"],                    // 3
-        seulDroite:["Victor","Malik","Ylias","Lucas2","Tess","Yliano"], // 6
+        seulDroite:["Victor","Malik","Ylias","Lukas","Tess","Yliano"], // 6
         dehors:["Yacemine","Kassandra"],                  // 2
         q:[
           {texte:"Combien d'enfants font du tennis (en tout : milieu + tennis seul) ?", rep:9, type:"calc"},
