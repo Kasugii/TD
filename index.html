@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Labo des Chiffres 🔭</title>
+<style>
+:root{
+  --bg:#eef6ff; --bg2:#fdf0f4;
+  --ink:#2c3357; --soft:#6b7399;
+  --blue:#5aa9e6; --mint:#6fd6c0; --peach:#f4978e; --gold:#ffc861; --lav:#b6a6e9;
+  --card:#ffffff; --line:#dde6f5;
+  --ok:#2fa36b; --okbg:#e3f6ec; --ko:#d65a4a; --kobg:#fdeae6;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Trebuchet MS',Verdana,system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 500px at 15% -10%, #d9ecff 0%, transparent 60%),
+    radial-gradient(900px 500px at 95% 0%, #ffe2ee 0%, transparent 55%),
+    linear-gradient(160deg,var(--bg),var(--bg2));
+  background-attachment:fixed;
+  min-height:100vh; padding-bottom:90px;
+  -webkit-tap-highlight-color:transparent;
+}
+/* étoiles d'ambiance */
+.sparks{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.spark{position:absolute;color:#ffd98a;opacity:.5;animation:tw 3.5s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.7;transform:scale(1.15)}}
+.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:16px 14px 0}
+
+/* ---- en-tête ---- */
+header{text-align:center;margin:8px 0 16px}
+header .logo{font-size:42px;line-height:1}
+header h1{margin:4px 0 2px;font-size:26px;letter-spacing:.3px}
+header p{margin:0;color:var(--soft);font-weight:bold;font-size:13px}
+
+/* ---- carte de connexion ---- */
+.pseudo-box{display:flex;gap:8px;justify-content:center;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.pseudo-box input{font:inherit;font-weight:bold;padding:9px 12px;border-radius:12px;border:2px solid var(--line);width:180px;text-align:center}
+.dot{width:10px;height:10px;border-radius:50%;background:#c5cee0;display:inline-block;box-shadow:0 0 0 3px #e7edf9}
+.dot.on{background:var(--mint);box-shadow:0 0 0 3px #d3f4ec}
+.conn{font-size:12px;color:var(--soft);font-weight:bold}
+
+/* ---- onglets ---- */
+.tabs{display:flex;gap:6px;background:var(--card);border:2px solid var(--line);
+  border-radius:16px;padding:6px;position:sticky;top:8px;z-index:5;box-shadow:0 6px 18px rgba(90,120,180,.12)}
+.tab{flex:1;border:none;background:transparent;font:inherit;font-weight:bold;font-size:13px;
+  color:var(--soft);padding:9px 4px;border-radius:11px;cursor:pointer;transition:.15s}
+.tab.active{background:linear-gradient(135deg,var(--blue),var(--lav));color:#fff;box-shadow:0 4px 10px rgba(120,140,230,.35)}
+.tab .ic{display:block;font-size:18px}
+
+section{display:none;animation:fade .25s ease}
+section.show{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;
+  padding:16px;margin:14px 0;box-shadow:0 8px 22px rgba(90,120,180,.10)}
+.card h2{margin:0 0 4px;font-size:19px}
+.muted{color:var(--soft);font-size:13px}
+
+/* ---- choix de chapitre ---- */
+.chap{display:flex;gap:12px;align-items:center;cursor:pointer;border-radius:16px;
+  padding:14px;border:2px solid var(--line);background:var(--card);margin:12px 0;transition:.15s;width:100%;text-align:left;font:inherit}
+.chap:active{transform:scale(.98)}
+.chap .e{font-size:34px}
+.chap b{font-size:17px;display:block}
+.chap span{color:var(--soft);font-size:13px}
+
+/* ---- leçon ---- */
+.lesson p.intro{margin:0 0 8px;color:var(--soft)}
+.lbloc{border-left:5px solid var(--blue);background:#f4f9ff;border-radius:10px;padding:10px 12px;margin:8px 0}
+.lbloc.alt{border-color:var(--peach);background:#fff4f2}
+.lbloc b{display:block;margin-bottom:2px}
+.lbloc span{font-size:14px;line-height:1.5}
+
+/* ---- boutons ---- */
+.btn{font:inherit;font-weight:bold;font-size:16px;border:none;border-radius:14px;padding:13px 18px;
+  cursor:pointer;width:100%;color:#fff;background:linear-gradient(135deg,var(--blue),var(--lav));
+  box-shadow:0 5px 0 #8f9fd6;transition:.1s;margin-top:6px}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #8f9fd6}
+.btn.peach{background:linear-gradient(135deg,var(--peach),var(--gold));box-shadow:0 5px 0 #d99a5c}
+.btn.peach:active{box-shadow:0 2px 0 #d99a5c}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.ghost:active{box-shadow:0 1px 0 var(--line)}
+.btn.sm{width:auto;font-size:14px;padding:9px 14px}
+.btn:disabled{opacity:.5}
+
+/* ---- type picker ---- */
+.types{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.tpick{border:2px solid var(--line);border-radius:14px;padding:12px;background:var(--card);cursor:pointer;font:inherit;text-align:center;transition:.12s}
+.tpick:active{transform:scale(.97)}
+.tpick .te{font-size:26px;display:block}
+.tpick b{font-size:14px}
+
+/* ---- zone d'exercice ---- */
+.qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:bold;font-size:13px;color:var(--soft)}
+.progress{height:9px;background:#e7edf9;border-radius:99px;overflow:hidden;margin-bottom:12px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--blue));width:0;transition:.3s}
+.enonce{font-size:16px;line-height:1.5;margin:6px 0 12px}
+.enonce b{color:var(--peach)}
+
+/* tableau de données */
+table.data{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+table.data th,table.data td{border:2px solid var(--line);padding:7px 9px;text-align:center}
+table.data th{background:#eef3ff}
+table.data td.lbl{text-align:left;font-weight:bold;background:#fafcff}
+.cellfill{width:54px;font:inherit;text-align:center;border:2px dashed var(--peach);border-radius:8px;padding:5px}
+
+/* choix réponses */
+.choices{display:grid;gap:8px;margin-top:6px}
+.choice{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:12px;font:inherit;font-size:15px;text-align:left;cursor:pointer;transition:.12s}
+.choice:active{transform:scale(.99)}
+.choice.good{background:var(--okbg);border-color:var(--ok);color:#1c6b45;font-weight:bold}
+.choice.bad{background:var(--kobg);border-color:var(--ko);color:#9c2f22}
+.opbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.opbtn{font-size:24px;font-weight:bold;width:64px;height:60px;border-radius:14px;border:2px solid var(--line);background:#fff;cursor:pointer}
+.opbtn.good{background:var(--okbg);border-color:var(--ok)}
+.opbtn.bad{background:var(--kobg);border-color:var(--ko)}
+.numin{display:flex;gap:8px;margin-top:6px}
+.numin input{flex:1;font:inherit;font-size:18px;font-weight:bold;text-align:center;padding:12px;border-radius:12px;border:2px solid var(--line)}
+
+/* feedback */
+.fb{margin-top:10px;border-radius:12px;padding:10px 12px;font-weight:bold;font-size:14px;display:none}
+.fb.show{display:block;animation:pop .25s}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.fb.ok{background:var(--okbg);color:var(--ok)}
+.fb.ko{background:var(--kobg);color:var(--ko)}
+
+/* score flottant */
+.scoretag{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,var(--gold),var(--peach));
+  color:#fff;font-weight:bold;border-radius:99px;padding:6px 14px;font-size:14px}
+
+/* leaderboard */
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;margin:7px 0;background:var(--card)}
+.lb-row.me{border-color:var(--blue);background:#eef6ff}
+.lb-row .rank{font-weight:bold;width:26px;text-align:center;color:var(--soft)}
+.lb-row .nm{flex:1;font-weight:bold}
+.lb-row .sc{font-weight:bold;color:var(--peach)}
+.lb-row.top1 .rank{color:var(--gold);font-size:18px}
+
+/* duel */
+.duel-codes{display:flex;gap:8px;margin-top:8px}
+.duel-codes input{flex:1;font:inherit;font-weight:bold;font-size:20px;text-align:center;letter-spacing:4px;padding:11px;border-radius:12px;border:2px solid var(--line);text-transform:uppercase}
+.bigcode{font-size:40px;font-weight:bold;letter-spacing:8px;text-align:center;color:var(--blue);margin:10px 0;background:#eef6ff;border-radius:14px;padding:14px}
+.vs{display:flex;justify-content:space-around;text-align:center;margin:12px 0}
+.vs .p{flex:1}
+.vs .p .who{font-weight:bold;font-size:14px}
+.vs .p .pts{font-size:30px;font-weight:bold}
+.vs .mid{display:flex;align-items:center;font-weight:bold;color:var(--peach);font-size:18px;padding:0 6px}
+.me-pts{color:var(--blue)} .opp-pts{color:var(--peach)}
+
+/* bottom nav (mobile) */
+@media(max-width:620px){
+  .tab .ic{font-size:20px}
+  .tab b{font-size:11px}
+  header h1{font-size:22px}
+}
+.tag{display:inline-block;background:#eef3ff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:bold;color:var(--soft);margin:3px 4px 0 0}
+</style>
+</head>
+<body>
+<div class="sparks" id="sparks"></div>
+<div class="app">
+
+  <header>
+    <div class="logo">🔭</div>
+    <h1>Le Labo des Chiffres</h1>
+    <p>Lis les graphiques • Résous les énigmes • Défie ta sœur</p>
+  </header>
+
+  <div class="pseudo-box">
+    <input id="pseudo" maxlength="14" placeholder="Ton prénom">
+    <span class="dot" id="dot"></span>
+    <span class="conn" id="conn">hors ligne</span>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-s="home"><span class="ic">🏠</span><b>Accueil</b></button>
+    <button class="tab" data-s="learn"><span class="ic">📖</span><b>Leçons</b></button>
+    <button class="tab" data-s="train"><span class="ic">🎯</span><b>Exos</b></button>
+    <button class="tab" data-s="duel"><span class="ic">⚔️</span><b>Duel</b></button>
+    <button class="tab" data-s="board"><span class="ic">🏆</span><b>Classement</b></button>
+  </nav>
+
+  <!-- ACCUEIL -->
+  <section id="home" class="show">
+    <div class="card">
+      <h2>Bienvenue 👋</h2>
+      <p class="muted">Demain : <b>traitement de données</b> (lire tableaux et graphiques) et <b>résolution de problèmes</b>. Entraîne-toi ici, puis défie ta sœur en duel !</p>
+      <div style="margin-top:8px"><span class="scoretag">⭐ Score total : <span id="homeScore">0</span></span></div>
+    </div>
+    <div class="card">
+      <h2>Par où commencer ?</h2>
+      <button class="chap" onclick="go('learn')"><span class="e">📖</span><span><b>Réviser les leçons</b><span>Comprendre avant de s'entraîner</span></span></button>
+      <button class="chap" onclick="go('train')"><span class="e">🎯</span><span><b>S'entraîner</b><span>6 types d'exercices, des dizaines de questions</span></span></button>
+      <button class="chap" onclick="go('duel')"><span class="e">⚔️</span><span><b>Faire un duel en ligne</b><span>Toi contre ta sœur, en direct</span></span></button>
+    </div>
+  </section>
+
+  <!-- LEÇONS -->
+  <section id="learn">
+    <div id="learnPick"></div>
+    <div id="learnView"></div>
+  </section>
+
+  <!-- EXOS -->
+  <section id="train">
+    <div id="trainPick"></div>
+    <div id="trainPlay" style="display:none"></div>
+  </section>
+
+  <!-- DUEL -->
+  <section id="duel">
+    <div class="card" id="duelLobby">
+      <h2>⚔️ Duel en ligne</h2>
+      <p class="muted">Une joueuse crée un duel et donne le <b>code</b> à l'autre. Mêmes questions, en direct ! Il faut être <b>en ligne</b> (point vert).</p>
+      <div style="margin:10px 0">
+        <span class="tag" onclick="duelTheme='operation';refreshDuelTheme()" id="dt-operation">🧩 Quelle opération ?</span>
+        <span class="tag" onclick="duelTheme='quoi';refreshDuelTheme()" id="dt-quoi">❓ Que demande-t-on ?</span>
+        <span class="tag" onclick="duelTheme='batons';refreshDuelTheme()" id="dt-batons">📊 Lire un graphique</span>
+      </div>
+      <button class="btn peach" onclick="createDuel()">Créer un duel</button>
+      <div class="duel-codes">
+        <input id="joinCode" maxlength="4" placeholder="CODE">
+        <button class="btn sm" style="width:auto" onclick="joinDuel()">Rejoindre</button>
+      </div>
+      <div id="duelMsg" class="muted" style="margin-top:8px"></div>
+    </div>
+    <div class="card" id="duelWait" style="display:none">
+      <h2>En attente…</h2>
+      <p class="muted">Donne ce code à l'autre joueuse :</p>
+      <div class="bigcode" id="waitCode">----</div>
+    </div>
+    <div id="duelPlay" style="display:none"></div>
+  </section>
+
+  <!-- CLASSEMENT -->
+  <section id="board">
+    <div class="card">
+      <h2>🏆 Classement</h2>
+      <p class="muted">Le classement est partagé : toi, ta sœur et quelques rivaux ✦ qui montent aussi. Gagne des points en t'entraînant et en duel pour passer 1ère !</p>
+      <div id="lbList"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+/* =========================================================
+   ⚙️ CONFIG — remplace par TON URL Render après déploiement
+   ========================================================= */
+const SERVER_URL = "wss://TON-APP.onrender.com";
+/* ========================================================= */
+
+// étoiles d'ambiance
+(function(){const s=document.getElementById('sparks');for(let i=0;i<14;i++){const e=document.createElement('div');e.className='spark';e.textContent='✦';e.style.left=Math.random()*100+'%';e.style.top=Math.random()*100+'%';e.style.fontSize=(8+Math.random()*16)+'px';e.style.animationDelay=(Math.random()*3.5)+'s';s.appendChild(e);}})();
+
+// ---- état ----
+let score = Number(localStorage.getItem('labo_score')||0);
+let pseudo = localStorage.getItem('labo_pseudo')||'';
+let ws=null, online=false;
+let duelTheme='operation', duelCode=null, duelRole=null, inDuel=false;
+
+const $=s=>document.querySelector(s);
+const pseudoIn=$('#pseudo');
+pseudoIn.value=pseudo;
+updateScore(0);
+
+// ---- navigation ----
+function go(name){
+  document.querySelectorAll('section').forEach(x=>x.classList.toggle('show',x.id===name));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.s===name));
+  if(name==='learn') renderLearnPick();
+  if(name==='train') renderTrainPick();
+  if(name==='board') renderBoard();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>go(t.dataset.s));
+
+// ---- score ----
+function updateScore(add){
+  score+=add;
+  if(score<0)score=0;
+  localStorage.setItem('labo_score',score);
+  $('#homeScore').textContent=score;
+  if(online && ws && ws.readyState===1) ws.send(JSON.stringify({type:'score',score}));
+}
+
+/* =========================================================
+   CONNEXION WEBSOCKET
+   ========================================================= */
+function connect(){
+  pseudo=pseudoIn.value.trim()||'Joueur';
+  localStorage.setItem('labo_pseudo',pseudo);
+  try{
+    ws=new WebSocket(SERVER_URL);
+  }catch(e){ setOnline(false); return; }
+  ws.onopen=()=>{ setOnline(true); ws.send(JSON.stringify({type:'hello',pseudo})); ws.send(JSON.stringify({type:'score',score})); };
+  ws.onclose=()=>{ setOnline(false); setTimeout(connect,4000); };
+  ws.onerror=()=>{ setOnline(false); };
+  ws.onmessage=(ev)=>{
+    let m; try{m=JSON.parse(ev.data)}catch{return}
+    if(m.type==='board'){ lastBoard=m.board; if($('#board').classList.contains('show')) renderBoard(); }
+    else if(m.type==='duel_created'){ duelCode=m.code; duelRole='host'; $('#waitCode').textContent=m.code; $('#duelLobby').style.display='none'; $('#duelWait').style.display='block'; }
+    else if(m.type==='duel_start'){ startDuel(m); }
+    else if(m.type==='duel_opp'){ duelOppScore=m.score; renderDuelScores(); if(m.done) duelOppDone=true; checkDuelEnd(); }
+    else if(m.type==='duel_finished'||m.type==='duel_left'){ duelOppDone=true; checkDuelEnd(); }
+    else if(m.type==='duel_error'){ $('#duelMsg').textContent='⚠️ '+m.msg; }
+  };
+}
+function setOnline(v){
+  online=v;
+  $('#dot').classList.toggle('on',v);
+  $('#conn').textContent=v?'en ligne ✦':'hors ligne';
+}
+pseudoIn.addEventListener('change',()=>{ if(ws)ws.close(); connect(); });
+pseudoIn.addEventListener('blur',()=>{ if(!ws) connect(); });
+// connexion auto si pseudo déjà connu
+if(pseudo) connect();
+
+/* =========================================================
+   LEÇONS
+   ========================================================= */
+function renderLearnPick(){
+  let h='<div class="card"><h2>📖 Choisis une leçon</h2></div>';
+  CHAPITRES.forEach((c,i)=>{
+    h+=`<button class="chap" onclick="showLesson(${i})"><span class="e">${c.emoji}</span><span><b>${c.titre}</b><span>${c.lecon.length} parties à lire</span></span></button>`;
+  });
+  $('#learnPick').innerHTML=h;
+  $('#learnView').innerHTML='';
+}
+function showLesson(i){
+  const c=CHAPITRES[i];
+  let h=`<div class="card lesson"><button class="btn ghost sm" onclick="renderLearnPick()">← Retour</button>
+    <h2 style="margin-top:8px">${c.emoji} ${c.titre}</h2>`;
+  c.lecon.forEach((l,k)=>{ h+=`<div class="lbloc ${k%2?'alt':''}"><b>${l.t}</b><span>${l.c}</span></div>`; });
+  h+=`<button class="btn peach" onclick="go('train');startQuick(${i})">🎯 M'entraîner sur ce thème</button></div>`;
+  $('#learnPick').innerHTML='';
+  $('#learnView').innerHTML=h;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* =========================================================
+   ENTRAÎNEMENT — choix chapitre puis type
+   ========================================================= */
+const TYPE_LABELS = {
+  tableau:{e:'📋',n:'Lire un tableau'},
+  tableauComplet:{e:'➕',n:'Compléter un tableau'},
+  batons:{e:'📊',n:'Diagramme en bâtons'},
+  courbe:{e:'📈',n:'Graphique en ligne'},
+  ensembles:{e:'⭕',n:'Les ensembles'},
+  quoi:{e:'❓',n:'Que me demande-t-on ?'},
+  operation:{e:'🧮',n:'Quelle opération ?'},
+  indices:{e:'🔗',n:'Relier mot et opération'},
+};
+function renderTrainPick(){
+  $('#trainPlay').style.display='none';
+  let h='<div class="card"><h2>🎯 S\'entraîner</h2><p class="muted">Choisis un chapitre puis un type d\'exercice.</p></div>';
+  CHAPITRES.forEach((c,ci)=>{
+    h+=`<div class="card"><h2 style="font-size:16px">${c.emoji} ${c.titre}</h2><div class="types">`;
+    Object.keys(c.exos).forEach(key=>{
+      if(Array.isArray(c.exos[key]) && TYPE_LABELS[key]){
+        h+=`<button class="tpick" onclick="startExo(${ci},'${key}')"><span class="te">${TYPE_LABELS[key].e}</span><b>${TYPE_LABELS[key].n}</b></button>`;
+      }
+    });
+    h+=`</div></div>`;
+  });
+  $('#trainPick').innerHTML=h;
+  $('#trainPick').style.display='block';
+}
+function startQuick(ci){
+  // lance le 1er type du chapitre
+  const c=CHAPITRES[ci];
+  const key=Object.keys(c.exos).find(k=>Array.isArray(c.exos[k])&&TYPE_LABELS[k]);
+  startExo(ci,key);
+}
+
+/* =========================================================
+   MOTEUR D'EXERCICE
+   construit une liste de "questions atomiques" selon le type,
+   les mélange, et les pose une par une.
+   ========================================================= */
+let q=[], qi=0, qScore=0, onDone=null, duelMode=false;
+
+function buildQuestions(ci,key){
+  const c=CHAPITRES[ci], ex=c.exos[key], out=[];
+  if(key==='tableau'){
+    ex.forEach(t=>t.q.forEach(qq=>out.push({kind:'tableau',data:t,q:qq})));
+  }else if(key==='tableauComplet'){
+    ex.forEach(t=>out.push({kind:'tableauComplet',data:t}));
+  }else if(key==='batons'||key==='courbe'){
+    ex.forEach(t=>t.q.forEach(qq=>out.push({kind:key,data:t,q:qq})));
+  }else if(key==='ensembles'){
+    ex.forEach(t=>t.q.forEach(qq=>out.push({kind:'ensembles',data:t,q:qq})));
+  }else if(key==='quoi'){
+    ex.forEach(e=>out.push({kind:'quoi',e,choix:c.exos.quoiChoix,labels:c.exos.quoiLabels}));
+  }else if(key==='operation'){
+    ex.forEach(e=>out.push({kind:'operation',e,choix:c.exos.operationChoix,labels:c.exos.operationLabels}));
+  }else if(key==='indices'){
+    ex.forEach(e=>out.push({kind:'indices',e,choix:c.exos.operationChoix,labels:c.exos.operationLabels}));
+  }
+  return shuffle(out);
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function startExo(ci,key){
+  duelMode=false;
+  q=buildQuestions(ci,key);
+  qi=0; qScore=0; onDone=null;
+  $('#trainPick').style.display='none';
+  $('#trainPlay').style.display='block';
+  renderQuestion('#trainPlay');
+}
+
+function renderQuestion(container){
+  const box=$(container);
+  if(qi>=q.length){ renderResults(container); return; }
+  const item=q[qi];
+  const pct=Math.round(qi/q.length*100);
+  let h=`<div class="card">
+    <div class="qhead"><span>Question ${qi+1} / ${q.length}</span><span class="scoretag">⭐ ${duelMode?duelMyScore:score}</span></div>
+    <div class="progress"><i style="width:${pct}%"></i></div>`;
+  h+=renderBody(item);
+  h+=`<div class="fb" id="fb"></div></div>`;
+  box.innerHTML=h;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderBody(item){
+  // renvoie le HTML du corps + branche les handlers via id
+  if(item.kind==='tableau') return bodyTableau(item);
+  if(item.kind==='tableauComplet') return bodyTableauComplet(item);
+  if(item.kind==='batons') return bodyChart(item,'bar');
+  if(item.kind==='courbe') return bodyChart(item,'line');
+  if(item.kind==='ensembles') return bodyEnsembles(item);
+  if(item.kind==='quoi'||item.kind==='operation') return bodyClassify(item);
+  if(item.kind==='indices') return bodyIndices(item);
+  return '';
+}
+
+/* ---------- corps : TABLEAU ---------- */
+function bodyTableau(item){
+  const t=item.data, qq=item.q;
+  let tbl=`<table class="data"><tr><th colspan="2">${t.titre}</th></tr>`;
+  t.lignes.forEach(([n,v])=>tbl+=`<tr><td class="lbl">${n}</td><td>${v}${t.unite}</td></tr>`);
+  tbl+=`</table>`;
+  let h=`<p class="muted">${t.intro}</p>${tbl}<p class="enonce">${qq.texte}</p>`;
+  // réponse : nombre OU nom (choix parmi les lignes)
+  if(qq.type==='lire'||qq.type==='calc'||qq.type==='compterLignes'){
+    h+=numInput(qq.rep);
+  }else{ // max / min -> choix parmi les noms
+    h+=choiceList(t.lignes.map(l=>l[0]), qq.rep);
+  }
+  return h;
+}
+
+/* ---------- corps : TABLEAU À COMPLÉTER ---------- */
+function bodyTableauComplet(item){
+  const t=item.data;
+  const la=t.labelA||'Filles', lb=t.labelB||'Garçons';
+  let tbl=`<table class="data"><tr><th>Jours</th>`;
+  t.cols.forEach(c=>tbl+=`<th>${c}</th>`); tbl+=`</tr>`;
+  tbl+=`<tr><td class="lbl">${la}</td>`+t.filles.map(v=>`<td>${v}</td>`).join('')+`</tr>`;
+  tbl+=`<tr><td class="lbl">${lb}</td>`+t.garcons.map(v=>`<td>${v}</td>`).join('')+`</tr>`;
+  tbl+=`<tr><td class="lbl">Total</td>`+t.cols.map((c,i)=>`<td><input class="cellfill" inputmode="numeric" id="cf${i}"></td>`).join('')+`</tr>`;
+  tbl+=`</table>`;
+  let h=`<p class="muted">${t.intro}</p>${tbl}
+    <button class="btn" onclick="checkTableauComplet()">Vérifier mes totaux</button>`;
+  // stocke pour le check
+  window._tc=t;
+  return h;
+}
+function checkTableauComplet(){
+  const t=window._tc; let okAll=true;
+  t.cols.forEach((c,i)=>{
+    const inp=$('#cf'+i), val=Number(inp.value), good=t.filles[i]+t.garcons[i];
+    if(val===good){ inp.style.borderColor='var(--ok)'; inp.style.background='var(--okbg)'; }
+    else{ inp.style.borderColor='var(--ko)'; inp.style.background='var(--kobg)'; inp.value=good; okAll=false; }
+  });
+  feedback(okAll, okAll?'Bravo, tous les totaux sont justes ! 🎉':`Le total = ${t.labelA||'filles'} + ${t.labelB||'garçons'}. Regarde les bonnes réponses.`, okAll?4:0);
+}
+
+/* ---------- corps : GRAPHIQUE (bâtons / courbe) en SVG ---------- */
+function bodyChart(item,mode){
+  const t=item.data, qq=item.q;
+  const svg=mode==='bar'?svgBars(t):svgLine(t);
+  let h=`<p class="muted">${t.intro}</p>${svg}<p class="enonce">${qq.texte}</p>`;
+  if(qq.type==='lire'){ h+=numInput(qq.rep); }
+  else { h+=choiceList(t.labels, qq.rep); }
+  return h;
+}
+function svgBars(t){
+  const W=420,H=220,padL=34,padB=30,padT=10;
+  const max=Math.max(...t.vals), n=t.vals.length;
+  const bw=(W-padL-10)/n*0.6, gap=(W-padL-10)/n;
+  const sy=v=>padT+(H-padT-padB)*(1-v/max);
+  let g='';
+  for(let k=0;k<=4;k++){const v=Math.round(max*k/4);const y=sy(v);g+=`<line x1="${padL}" y1="${y}" x2="${W}" y2="${y}" stroke="#e7edf9"/><text x="4" y="${y+4}" font-size="10" fill="#8b93b5">${v}</text>`;}
+  t.vals.forEach((v,i)=>{const x=padL+gap*i+gap*0.2;const y=sy(v);g+=`<rect x="${x}" y="${y}" width="${bw}" height="${H-padB-y}" rx="4" fill="#5aa9e6"/><text x="${x+bw/2}" y="${y-4}" font-size="10" fill="#2c3357" text-anchor="middle" font-weight="bold">${v}${t.unite||''}</text><text x="${x+bw/2}" y="${H-padB+14}" font-size="10" fill="#6b7399" text-anchor="middle">${t.labels[i]}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;background:#fbfdff;border:2px solid var(--line);border-radius:12px">${g}</svg>`;
+}
+function svgLine(t){
+  const W=420,H=220,padL=40,padB=28,padT=10;
+  const min=t.ymin, max=t.ymax, n=t.vals.length;
+  const gx=(W-padL-10)/(n-1);
+  const sy=v=>padT+(H-padT-padB)*(1-(v-min)/(max-min));
+  let g='',pts='';
+  const steps=5;
+  for(let k=0;k<=steps;k++){const v=min+(max-min)*k/steps;const y=sy(v);g+=`<line x1="${padL}" y1="${y}" x2="${W}" y2="${y}" stroke="#e7edf9"/><text x="4" y="${y+4}" font-size="10" fill="#8b93b5">${(+v.toFixed(1))}</text>`;}
+  t.vals.forEach((v,i)=>{const x=padL+gx*i;const y=sy(v);pts+=`${x},${y} `;g+=`<circle cx="${x}" cy="${y}" r="4" fill="#f4978e"/><text x="${x}" y="${y-8}" font-size="10" fill="#2c3357" text-anchor="middle" font-weight="bold">${v}</text><text x="${x}" y="${H-padB+14}" font-size="9" fill="#6b7399" text-anchor="middle">${t.labels[i]}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;background:#fbfdff;border:2px solid var(--line);border-radius:12px"><polyline points="${pts}" fill="none" stroke="#f4978e" stroke-width="3"/>${g}</svg>`;
+}
+
+/* ---------- corps : ENSEMBLES ---------- */
+function bodyEnsembles(item){
+  const t=item.data, qq=item.q;
+  const svg=svgVenn(t);
+  let h=`<p class="muted">Diagramme : <b>${t.gauche}</b> et <b>${t.droite}</b></p>${svg}<p class="enonce">${qq.texte}</p>`;
+  if(qq.type==='calc'){ h+=numInput(qq.rep); }
+  else if(qq.type==='ouinon'){ h+=choiceList(['oui','non'], qq.rep); }
+  else if(qq.type==='choix'){ h+=choiceList(qq.choix, qq.choix[qq.bon]); }
+  return h;
+}
+function svgVenn(t){
+  const W=420,H=200;
+  function names(arr,x,y){return arr.map((nm,i)=>`<text x="${x}" y="${y+i*15}" font-size="11" fill="#2c3357" text-anchor="middle">${nm.replace(/\d+$/,'')}</text>`).join('');}
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;background:#fbfdff;border:2px solid var(--line);border-radius:12px">
+    <ellipse cx="150" cy="100" rx="120" ry="80" fill="#5aa9e633" stroke="#5aa9e6" stroke-width="2"/>
+    <ellipse cx="270" cy="100" rx="120" ry="80" fill="#f4978e33" stroke="#f4978e" stroke-width="2"/>
+    <text x="80" y="30" font-size="12" font-weight="bold" fill="#5aa9e6">${t.gauche}</text>
+    <text x="300" y="30" font-size="12" font-weight="bold" fill="#f4978e">${t.droite}</text>
+    ${names(t.seulGauche,90,80)}
+    ${names(t.milieu,210,90)}
+    ${names(t.seulDroite,330,75)}
+    <text x="210" y="195" font-size="10" fill="#6b7399" text-anchor="middle">Dehors : ${t.dehors.map(x=>x.replace(/\d+$/,'')).join(', ')}</text>
+  </svg>`;
+}
+
+/* ---------- corps : CLASSIFIER (quoi / operation) ---------- */
+function bodyClassify(item){
+  let h=`<p class="enonce">${item.e.e}</p>`;
+  if(item.kind==='operation'){
+    // boutons + - × :
+    h+=`<div class="opbtns" id="ops">`;
+    item.choix.forEach(op=>h+=`<button class="opbtn" data-v="${op}" onclick="answerOp(this,'${op==='×'?'x':op}')">${op}</button>`);
+    h+=`</div><p class="muted" style="text-align:center;margin-top:6px">Choisis : ${Object.values(item.labels).join(' • ')}</p>`;
+    window._cur=item;
+  }else{
+    h+=choiceListKeys(item.choix.map(k=>({k,label:item.labels[k]})), item.e.bon);
+  }
+  return h;
+}
+function bodyIndices(item){
+  let h=`<p class="enonce">Indice : « ${item.e.mot} »</p><p class="muted">Quelle opération ?</p>`;
+  h+=`<div class="opbtns">`;
+  item.choix.forEach(op=>h+=`<button class="opbtn" onclick="answerSimple(this,'${op}'==='${item.e.bon}')">${op}</button>`);
+  h+=`</div>`;
+  return h;
+}
+
+/* ---------- briques de réponse ---------- */
+function numInput(rep){
+  window._rep=rep;
+  return `<div class="numin"><input id="numA" inputmode="${typeof rep==='number'?'numeric':'text'}" placeholder="Ta réponse"><button class="btn sm" style="width:auto" onclick="answerNum()">OK</button></div>`;
+}
+function answerNum(){
+  const v=$('#numA').value.trim(), rep=window._rep;
+  let ok;
+  if(typeof rep==='number') ok=Number(v)===rep;
+  else ok=norm(v)===norm(rep);
+  feedback(ok, ok?'Bravo ! 🎉':`La bonne réponse était : ${rep}`, ok?5:0);
+}
+function norm(s){return String(s).toLowerCase().replace(/[éè]/g,'e').replace(/[^a-z0-9]/g,'').trim();}
+
+function choiceList(opts,correct){
+  window._correct=correct;
+  let h=`<div class="choices">`;
+  opts.forEach(o=>h+=`<button class="choice" onclick="answerChoice(this,'${esc(o)}')">${o.replace(/\d+$/,'')}</button>`);
+  return h+`</div>`;
+}
+function answerChoice(btn,val){
+  const ok=norm(val)===norm(window._correct);
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  btn.classList.add(ok?'good':'bad');
+  if(!ok){document.querySelectorAll('.choice').forEach(b=>{if(norm(b.textContent)===norm(window._correct.replace(/\d+$/,'')))b.classList.add('good');});}
+  feedback(ok, ok?'Bravo ! 🎉':`C'était : ${window._correct.replace(/\d+$/,'')}`, ok?5:0);
+}
+function choiceListKeys(opts,correctKey){
+  window._correctKey=correctKey;
+  let h=`<div class="choices">`;
+  opts.forEach(o=>h+=`<button class="choice" onclick="answerKey(this,'${o.k}')">${o.label}</button>`);
+  return h+`</div>`;
+}
+function answerKey(btn,key){
+  const ok=key===window._correctKey;
+  document.querySelectorAll('.choice').forEach(b=>b.disabled=true);
+  btn.classList.add(ok?'good':'bad');
+  feedback(ok, ok?'Bravo ! 🎉':'Pas tout à fait — relis l\'énoncé.', ok?5:0);
+}
+function answerOp(btn,op){
+  const item=window._cur, real=op==='x'?'×':op;
+  const ok=real===item.e.bon;
+  document.querySelectorAll('.opbtn').forEach(b=>b.disabled=true);
+  btn.classList.add(ok?'good':'bad');
+  if(!ok)document.querySelectorAll('.opbtn').forEach(b=>{if(b.dataset.v===item.e.bon)b.classList.add('good');});
+  feedback(ok, ok?'Bravo ! 🎉':`C'était : ${item.labels[item.e.bon]} (${item.e.bon})`, ok?5:0);
+}
+function answerSimple(btn,ok){
+  document.querySelectorAll('.opbtn').forEach(b=>b.disabled=true);
+  btn.classList.add(ok?'good':'bad');
+  feedback(ok, ok?'Bravo ! 🎉':'Raté !', ok?5:0);
+}
+function esc(s){return String(s).replace(/'/g,"\\'");}
+
+/* ---------- feedback + passage à la question suivante ---------- */
+function feedback(ok,msg,pts){
+  const fb=$('#fb'); fb.className='fb show '+(ok?'ok':'ko'); fb.textContent=msg;
+  if(ok){ qScore+=pts; if(duelMode){ duelMyScore+=pts; sendDuelProgress(false); } else updateScore(pts); }
+  const next=document.createElement('button');
+  next.className='btn'; next.style.marginTop='10px';
+  next.textContent = (qi+1>=q.length)?'Voir mon résultat':'Question suivante →';
+  next.onclick=()=>{ qi++; renderQuestion(duelMode?'#duelPlay':'#trainPlay'); };
+  fb.after(next);
+}
+
+function renderResults(container){
+  const max=q.length*5;
+  let stars = qScore>=max*0.8?'⭐⭐⭐': qScore>=max*0.5?'⭐⭐':'⭐';
+  let h=`<div class="card" style="text-align:center">
+    <div style="font-size:46px">${stars}</div>
+    <h2>Terminé !</h2>
+    <p class="muted">Tu as gagné <b>${qScore}</b> points sur cette série.</p>`;
+  if(duelMode){
+    h+=`<p class="muted">En attente de l'autre joueuse…</p>`;
+    duelMyDone=true; sendDuelProgress(true); checkDuelEnd();
+    $(container).innerHTML=h+`</div>`;
+    return;
+  }
+  h+=`<button class="btn" onclick="renderTrainPick()">Choisir un autre exercice</button>
+     <button class="btn ghost" onclick="go('board')">Voir le classement 🏆</button></div>`;
+  $(container).innerHTML=h;
+}
+
+/* =========================================================
+   DUEL PvP
+   ========================================================= */
+let duelMyScore=0, duelOppScore=0, duelMyDone=false, duelOppDone=false, duelOppName='';
+function refreshDuelTheme(){
+  ['operation','quoi','batons'].forEach(t=>$('#dt-'+t).style.background = t===duelTheme?'#dbe9ff':'#eef3ff');
+}
+refreshDuelTheme();
+function createDuel(){
+  if(!online){ $('#duelMsg').textContent='⚠️ Tu dois être en ligne (mets ton prénom).'; return; }
+  ws.send(JSON.stringify({type:'duel_create',theme:duelTheme}));
+}
+function joinDuel(){
+  if(!online){ $('#duelMsg').textContent='⚠️ Tu dois être en ligne.'; return; }
+  const code=$('#joinCode').value.trim().toUpperCase();
+  if(code.length<4){ $('#duelMsg').textContent='Entre le code complet (4 lettres).'; return; }
+  duelCode=code; duelRole='guest';
+  ws.send(JSON.stringify({type:'duel_join',code}));
+}
+function startDuel(m){
+  inDuel=true; duelTheme=m.theme; duelOppName=m.opp;
+  duelMyScore=0; duelOppScore=0; duelMyDone=false; duelOppDone=false;
+  // construire les questions du thème choisi (même chapitre)
+  const map={operation:[1,'operation'],quoi:[1,'quoi'],batons:[0,'batons']};
+  const [ci,key]=map[m.theme]||[1,'operation'];
+  duelMode=true; q=buildQuestions(ci,key).slice(0,8); qi=0; qScore=0;
+  $('#duelLobby').style.display='none'; $('#duelWait').style.display='none';
+  $('#duelPlay').style.display='block';
+  go('duel');
+  renderQuestion('#duelPlay');
+}
+function renderDuelScores(){
+  const a=$('#mePts'), b=$('#oppPts');
+  if(a)a.textContent=duelMyScore; if(b)b.textContent=duelOppScore;
+}
+function sendDuelProgress(done){
+  if(ws&&ws.readyState===1) ws.send(JSON.stringify({type:'duel_progress',code:duelCode,score:duelMyScore,done}));
+}
+function checkDuelEnd(){
+  if(duelMyDone && duelOppDone){
+    const win = duelMyScore>duelOppScore, tie=duelMyScore===duelOppScore;
+    let h=`<div class="card" style="text-align:center"><div style="font-size:46px">${win?'🏆':tie?'🤝':'💪'}</div>
+      <h2>${win?'Tu as gagné !':tie?'Égalité !':'Pas cette fois !'}</h2>
+      <div class="vs"><div class="p"><div class="who">Toi</div><div class="pts me-pts">${duelMyScore}</div></div>
+      <div class="mid">VS</div>
+      <div class="p"><div class="who">${duelOppName}</div><div class="pts opp-pts">${duelOppScore}</div></div></div>`;
+    if(win){ updateScore(15); h+=`<p class="muted">+15 points bonus au classement ✦</p>`; }
+    h+=`<button class="btn" onclick="resetDuel()">Rejouer un duel</button></div>`;
+    $('#duelPlay').innerHTML=h;
+    inDuel=false; duelMode=false;
+  } else if(duelMyDone){
+    // déjà affiché "en attente"
+  }
+}
+function resetDuel(){
+  duelCode=null; duelRole=null; inDuel=false; duelMode=false;
+  $('#duelPlay').style.display='none'; $('#duelPlay').innerHTML='';
+  $('#duelWait').style.display='none';
+  $('#duelLobby').style.display='block';
+  $('#duelMsg').textContent='';
+  $('#joinCode').value='';
+}
+// pendant un duel, on ajoute la barre de score VS au-dessus de la question
+const _origRenderQuestion=renderQuestion;
+renderQuestion=function(container){
+  _origRenderQuestion(container);
+  if(duelMode && qi<q.length){
+    const bar=document.createElement('div');
+    bar.className='card'; bar.style.margin='0 0 10px';
+    bar.innerHTML=`<div class="vs"><div class="p"><div class="who">Toi</div><div class="pts me-pts" id="mePts">${duelMyScore}</div></div>
+      <div class="mid">VS</div>
+      <div class="p"><div class="who">${duelOppName||'Adversaire'}</div><div class="pts opp-pts" id="oppPts">${duelOppScore}</div></div></div>`;
+    const c=$(container); c.insertBefore(bar,c.firstChild);
+  }
+};
+
+/* =========================================================
+   CLASSEMENT
+   ========================================================= */
+let lastBoard=[];
+function renderBoard(){
+  let board=lastBoard;
+  if(!board.length){
+    // hors ligne : on montre au moins le joueur + bots locaux figés
+    board=[{pseudo:pseudo||'Toi',score,bot:false},
+      {pseudo:'Tina ✦',score:5,bot:true},{pseudo:'Léo ✦',score:11,bot:true},
+      {pseudo:'Maya ✦',score:17,bot:true},{pseudo:'Hugo ✦',score:23,bot:true}]
+      .sort((a,b)=>b.score-a.score);
+  }
+  let h='';
+  board.forEach((r,i)=>{
+    const me = !r.bot && r.pseudo===pseudo;
+    h+=`<div class="lb-row ${me?'me':''} ${i===0?'top1':''}">
+      <span class="rank">${i===0?'👑':(i+1)}</span>
+      <span class="nm">${r.bot?'':'👤 '}${r.pseudo}${me?' (toi)':''}</span>
+      <span class="sc">${r.score}</span></div>`;
+  });
+  $('#lbList').innerHTML=h || '<p class="muted">Classement vide.</p>';
+}
+</script>
+</body>
+</html>
